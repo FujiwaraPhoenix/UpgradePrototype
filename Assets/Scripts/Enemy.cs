@@ -24,9 +24,17 @@ public class Enemy : MonoBehaviour {
     {
         if (collision.gameObject.tag == "Player")
         {
-            if (Controller.Instance.invulnTimer < 0)
+            if (Controller.Instance.invulnTimer <= 0)
             {
                 PlayerController.pc.HP -= dmg;
+                Controller.Instance.invulnTimer = 2f;
+            }
+        }
+        else if (collision.gameObject.GetComponent<Structure>() != null)
+        {
+            if (collision.gameObject.GetComponent<Structure>().structureID == 0)
+            {
+                collision.gameObject.GetComponent<Structure>().currentHP -= dmg;
                 Controller.Instance.invulnTimer = 2f;
             }
         }

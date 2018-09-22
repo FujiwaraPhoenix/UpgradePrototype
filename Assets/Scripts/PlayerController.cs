@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
     public static PlayerController pc;
     //Need HP.
-    public int HP;
+    public int HP, maxHP;
 
     public bool attacking;
 

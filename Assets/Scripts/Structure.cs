@@ -9,7 +9,15 @@ public class Structure : MonoBehaviour {
     public int structureID, upgradeID;
     public int currentHP;
     public int maxHP;
+    public float invulnTimer = 0;
+    public int upgradeLv;
+    //In order: Wood, Stone, Metal, Water.
     public int[] upgradeReqs = new int[4];
+    //True is use normally, false is upgrade.
+    public bool optionSelect;
+    public bool optionChosen = false;
+
+    public int hpHealed;
 
 	// Use this for initialization
 	void Start () {
@@ -18,63 +26,104 @@ public class Structure : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+        structureAction();
+        if (invulnTimer > 0)
+        {
+            invulnTimer -= Time.deltaTime;
+        }
 	}
 
     public void structureAction()
     {
-        if (structureID == 0)
-        {
-            wall();
-        }
-        if (structureID == 1)
-        {
-            furnace();
-        }
-        if (structureID == 2)
-        {
-            bed();
-        }
-        if (structureID == 3)
-        {
-            chest();
-        }
-    }
-
-    public void wall()
-    {
-        //Each wall is unique for the sake of this prototype.
-        //You can only upgrade/experiment on it.
-    }
-    public void furnace()
-    {
-        //Only one furnace. Upgrade weapon or upgrade/experiment.
-    }
-    public void bed()
-    {
-        //Interact and choose: Sleep or upgrade/experiment.
-    }
-    public void chest()
-    {
-        //Honestly, this doesn't do anything lol. Give it the upgrade prompt.
-    }
-    public void runeCircle()
-    {
-        //Cannot be upgraded. Select material, select quantity, select rune. 
-    }
-
-    public void promptUpgrade()
-    {
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
-            Collider2D[] checkForItem = Physics2D.OverlapBoxAll(transform.position, GetComponent<BoxCollider2D>().size, 0);
-            foreach (Collider2D itemCollider in checkForItem)
+            if (structureID == 0 || structureID == 3)
             {
-                if (itemCollider.GetComponent<PlayerController>() != null)
+                promptUpgrade();
+            }
+            if (structureID == 1 || structureID == 2)
+            {
+                chooseOption();
+            }
+            if (structureID == 4)
+            {
+                promptCombo();
+            }
+        }
+    }
+
+    public void chooseOption()
+    {
+        //Only one. Interact and choose: Sleep or upgrade/experiment.
+        Collider2D[] checkForPC = Physics2D.OverlapBoxAll(transform.position, GetComponent<BoxCollider2D>().size*1.25f, 0);
+        foreach (Collider2D itemCollider in checkForPC)
+        {
+            if (itemCollider.GetComponent<PlayerController>() != null)
+            {
+                optionChosen = false;
+                while (!optionChosen)
                 {
-                    InfoDisplay.id.upgradeScreen();
+                    //All of these have 2 options: Either use it as it is or prompt the upgrade.
+                    if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+                    {
+                        optionSelect = !optionSelect;
+                    }
+                    else if (Input.GetKeyDown(KeyCode.Z))
+                    {
+                        if (optionSelect)
+                        {
+                            useStructure();
+                        }
+                        else
+                        {
+                            promptUpgrade();
+                        }
+                        optionChosen = true;
+                    }
                 }
             }
         }
     }
+
+    public void promptUpgrade()
+    {
+        Collider2D[] checkForPC = Physics2D.OverlapBoxAll(transform.position, GetComponent<BoxCollider2D>().size * 1.25f, 0);
+        foreach (Collider2D itemCollider in checkForPC)
+        {
+            if (itemCollider.GetComponent<PlayerController>() != null)
+            {
+                InfoDisplay.id.UIActive = true;
+                InfoDisplay.id.currentStructure = this;
+                InfoDisplay.id.UIstate = 1;
+            }
+        }
+    }
+
+    public void promptCombo()
+    {
+
+    }
+
+    public void useStructure()
+    {
+        //Furnace upgrade prompt.
+        if (structureID == 1)
+        {
+            InfoDisplay.id.upgradeWeapon(this);
+        }
+        //Use the bed.
+        if (structureID == 2)
+        {
+            if (upgradeID == 3)
+            {
+                PlayerController.pc.HP = PlayerController.pc.maxHP + 2;
+            }
+            else
+            {
+                PlayerController.pc.HP = PlayerController.pc.maxHP;
+            }
+        }
+    }
+
+    
 }
