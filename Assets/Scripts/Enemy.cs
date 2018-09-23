@@ -10,6 +10,8 @@ public class Enemy : MonoBehaviour {
 
     public Rigidbody2D rb;
 
+	public GameObject controller;
+
 	// Use this for initialization
 	void Start () {
 		
@@ -18,6 +20,7 @@ public class Enemy : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         chase();
+		death();
 	}
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -38,6 +41,16 @@ public class Enemy : MonoBehaviour {
                 Controller.Instance.invulnTimer = 2f;
             }
         }
+
+		else if (collision.gameObject.tag == "rangedAtk") {
+			Debug.Log ("hit");
+
+			hp = hp - Controller.Instance.bowDetails [0];
+
+			Destroy (collision.gameObject);
+
+		}
+
     }
 
     public void chase()
@@ -49,4 +62,13 @@ public class Enemy : MonoBehaviour {
             transform.position += distToPlayer * mvtSpd * Time.deltaTime;
         }
     }
+
+	public void death(){
+
+		if (hp <= 0) {
+			Destroy (this.gameObject);
+		}
+
+	}
+		
 }
