@@ -15,6 +15,10 @@ public class PlayerController : MonoBehaviour {
 
     public int mvtSpd;
 
+	public GameObject rangedAtkPrefab;
+	public Transform rangedAtkSpawn;
+	public int playerFacing;
+
     // Use this for initialization
     void Start () {
 		
@@ -24,6 +28,12 @@ public class PlayerController : MonoBehaviour {
 	void Update () {
         moveChar();
         getItem();
+		trackFacing();
+
+		if (Input.GetKeyDown (KeyCode.X) && attacking == false) {
+			rangedAtk();
+			attacking = true;
+		}
 	}
 
     void Awake()
@@ -113,4 +123,52 @@ public class PlayerController : MonoBehaviour {
             Controller.Instance.runesOwned[3] = true;
         }
     }
+
+	public void trackFacing(){
+		if (Input.GetKey (KeyCode.LeftArrow)) {
+			playerFacing = 0;
+		}
+
+		if (Input.GetKey (KeyCode.UpArrow)) {
+			playerFacing = 1;
+		}
+
+		if (Input.GetKey (KeyCode.RightArrow)) {
+			playerFacing = 2;
+		}
+
+		if (Input.GetKey (KeyCode.DownArrow)) {
+			playerFacing = 3;
+		}
+	}
+		
+
+	public void rangedAtk(){
+		
+		GameObject Bullet = (GameObject)Instantiate (rangedAtkPrefab,transform.position,Quaternion.identity);
+		Vector3 newDirection = new Vector2();
+		if (playerFacing == 0) {
+			newDirection.x = -1;
+			newDirection.y = 0;
+		} else if (playerFacing == 1) {
+			newDirection.x = 0;
+			newDirection.y = 1;
+		} else if (playerFacing == 2) {
+			newDirection.x = 1;
+			newDirection.y = 0;
+		} else if (playerFacing == 3) {
+			newDirection.x = 0;
+			newDirection.y = -1;
+		}
+
+		Bullet.GetComponent<RangedAtk>().direction = newDirection;	
+
+		Invoke ("rangedAtkReset", 0.5f);
+	}
+
+	public void rangedAtkReset(){
+
+		attacking = false;
+
+	}
 }

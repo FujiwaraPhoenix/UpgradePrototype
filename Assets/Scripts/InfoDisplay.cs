@@ -99,7 +99,7 @@ public class InfoDisplay : MonoBehaviour {
                                 }
                                 else
                                 {
-                                    //Spit out an error message.
+									displayTxt.text = "That didn't work.";
                                 }
                             }
                             else
@@ -191,7 +191,7 @@ public class InfoDisplay : MonoBehaviour {
                                 }
                                 else
                                 {
-                                    //Spit out an error message.
+									displayTxt.text = "Doesn't seem like anything changed...";
                                 }
                             }
                             else
@@ -231,7 +231,7 @@ public class InfoDisplay : MonoBehaviour {
                                 }
                                 else
                                 {
-                                    //Spit out an error message.
+									displayTxt.text = "The bow doesn't look any different.";
                                 }
                             }
                             else
@@ -331,7 +331,7 @@ public class InfoDisplay : MonoBehaviour {
                 }
                 else
                 {
-                    //Spit out an error that you don't have that rune yet.
+					displayTxt.text = "You do not have this Rune in your inventory.";
                 }
             }
         }
