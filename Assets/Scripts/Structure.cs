@@ -54,7 +54,7 @@ public class Structure : MonoBehaviour {
 
     public void chooseOption()
     {
-        //Only one. Interact and choose: Sleep or upgrade/experiment.
+        //Only one. Interact and choose: Sleep/upgrade wep or upgrade/experiment.
         Collider2D[] checkForPC = Physics2D.OverlapBoxAll(transform.position, GetComponent<BoxCollider2D>().size*1.25f, 0);
         foreach (Collider2D itemCollider in checkForPC)
         {

@@ -61,7 +61,6 @@ public class TextFileParser : MonoBehaviour {
                     if (System.Int32.TryParse(itemList[i, j], out output)) {
                         convertedItemList[i - 1, j] = System.Int32.Parse(itemList[i, j]);
                     }
-                    Debug.Log(itemList[i, j]);
                 }
                 //Note: int.TryParse can be used to turn the values for the recipes into usable values. Use this, genius.
             }
