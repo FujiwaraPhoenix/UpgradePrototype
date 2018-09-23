@@ -16,6 +16,7 @@ public class Structure : MonoBehaviour {
     //True is use normally, false is upgrade.
     public bool optionSelect;
     public bool optionChosen = false;
+    public int[] viableUpgrades = new int[4];
 
     public int hpHealed;
 
@@ -87,11 +88,13 @@ public class Structure : MonoBehaviour {
 
     public void promptUpgrade()
     {
-        Collider2D[] checkForPC = Physics2D.OverlapBoxAll(transform.position, GetComponent<BoxCollider2D>().size * 1.25f, 0);
+        Collider2D[] checkForPC = Physics2D.OverlapBoxAll(transform.position, GetComponent<BoxCollider2D>().size, 0);
         foreach (Collider2D itemCollider in checkForPC)
         {
+            Debug.Log(itemCollider.gameObject);
             if (itemCollider.GetComponent<PlayerController>() != null)
             {
+                InfoDisplay.id.currentScreen = 0;
                 InfoDisplay.id.UIActive = true;
                 InfoDisplay.id.currentStructure = this;
                 InfoDisplay.id.UIstate = 1;
