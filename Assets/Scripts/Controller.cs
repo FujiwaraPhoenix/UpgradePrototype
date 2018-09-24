@@ -7,6 +7,8 @@ public class Controller : MonoBehaviour {
 
     public float invulnTimer;
 
+    public bool UIActive = false;
+
     public int woodCount = 0;
     public int stoneCount = 0;
     public int metalCount = 0;

@@ -26,14 +26,18 @@ public class PlayerController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        moveChar();
-        getItem();
-		trackFacing();
+        if (!Controller.Instance.UIActive)
+        {
+            moveChar();
+            getItem();
+            trackFacing();
 
-		if (Input.GetKeyDown (KeyCode.X) && attacking == false) {
-			rangedAtk();
-			attacking = true;
-		}
+            if (Input.GetKeyDown(KeyCode.X) && attacking == false)
+            {
+                rangedAtk();
+                attacking = true;
+            }
+        }
 	}
 
     void Awake()

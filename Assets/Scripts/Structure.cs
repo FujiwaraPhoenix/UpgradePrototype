@@ -27,7 +27,10 @@ public class Structure : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        structureAction();
+        if (!Controller.Instance.UIActive)
+        {
+            structureAction();
+        }
         if (invulnTimer > 0)
         {
             invulnTimer -= Time.deltaTime;
@@ -36,14 +39,16 @@ public class Structure : MonoBehaviour {
 
     public void structureAction()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (Input.GetKeyUp(KeyCode.Z))
         {
             if (structureID == 0 || structureID == 3)
             {
+
                 promptUpgrade();
             }
             if (structureID == 1 || structureID == 2)
             {
+                optionChosen = false;
                 chooseOption();
             }
             if (structureID == 4)
@@ -56,55 +61,58 @@ public class Structure : MonoBehaviour {
     public void chooseOption()
     {
         //Only one. Interact and choose: Sleep/upgrade wep or upgrade/experiment.
-        Collider2D[] checkForPC = Physics2D.OverlapBoxAll(transform.position, GetComponent<BoxCollider2D>().size*1.25f, 0);
-        foreach (Collider2D itemCollider in checkForPC)
+        Vector3 distToPlayer = new Vector2(PlayerController.pc.transform.position.x - transform.position.x, PlayerController.pc.transform.position.y - transform.position.y);
+        if (distToPlayer.magnitude < 1.5f)
         {
-            if (itemCollider.GetComponent<PlayerController>() != null)
+            if (!optionChosen)
             {
-                optionChosen = false;
-                while (!optionChosen)
+                //All of these have 2 options: Either use it as it is or prompt the upgrade.
+                if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
                 {
-                    //All of these have 2 options: Either use it as it is or prompt the upgrade.
-                    if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
-                    {
-                        optionSelect = !optionSelect;
-                    }
-                    else if (Input.GetKeyDown(KeyCode.Z))
-                    {
-                        if (optionSelect)
-                        {
-                            useStructure();
-                        }
-                        else
-                        {
-                            promptUpgrade();
-                        }
-                        optionChosen = true;
-                    }
+                    optionSelect = !optionSelect;
+                }
+                if (Input.GetKeyDown(KeyCode.Z))
+                {
+                    optionChosen = true;
                 }
             }
+        }
+        if (optionChosen)
+        {
+            if (optionSelect)
+            {
+                useStructure();
+            }
+            else
+            {
+                promptUpgrade();
+            }
+            optionChosen = true;
         }
     }
 
     public void promptUpgrade()
     {
-        Collider2D[] checkForPC = Physics2D.OverlapBoxAll(transform.position, GetComponent<BoxCollider2D>().size, 0);
-        foreach (Collider2D itemCollider in checkForPC)
+        Vector3 distToPlayer = new Vector2(PlayerController.pc.transform.position.x - transform.position.x, PlayerController.pc.transform.position.y - transform.position.y);
+        if (distToPlayer.magnitude < 1.5f)
         {
-            Debug.Log(itemCollider.gameObject);
-            if (itemCollider.GetComponent<PlayerController>() != null)
-            {
-                InfoDisplay.id.currentScreen = 0;
-                InfoDisplay.id.UIActive = true;
-                InfoDisplay.id.currentStructure = this;
-                InfoDisplay.id.UIstate = 1;
-            }
+            Controller.Instance.UIActive = true;
+            InfoDisplay.id.UIActive = true;
+            InfoDisplay.id.currentStructure = this;
+            InfoDisplay.id.UIstate = 1;
         }
     }
 
     public void promptCombo()
     {
-
+        Vector3 distToPlayer = new Vector2(PlayerController.pc.transform.position.x - transform.position.x, PlayerController.pc.transform.position.y - transform.position.y);
+        if (distToPlayer.magnitude < 1.5f)
+        {
+            Controller.Instance.UIActive = true;
+            InfoDisplay.id.UIActive = true;
+            InfoDisplay.id.currentScreen = 0;
+            InfoDisplay.id.UIstate = 3;
+        }
     }
 
     public void useStructure()
@@ -112,7 +120,10 @@ public class Structure : MonoBehaviour {
         //Furnace upgrade prompt.
         if (structureID == 1)
         {
-            InfoDisplay.id.upgradeWeapon(this);
+            Controller.Instance.UIActive = true;
+            InfoDisplay.id.UIActive = true;
+            InfoDisplay.id.currentStructure = this;
+            InfoDisplay.id.UIstate = 2;
         }
         //Use the bed.
         if (structureID == 2)

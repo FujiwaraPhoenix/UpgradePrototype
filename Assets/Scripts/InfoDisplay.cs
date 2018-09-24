@@ -7,6 +7,7 @@ public class InfoDisplay : MonoBehaviour {
     public static InfoDisplay id;
     public Text displayTxt;
     public Text[] itemListing = new Text[4];
+    public Text feedbackMsg;
     string[] itemsShown = new string[9];
     public Image img;
     public bool UIActive = false;
@@ -17,6 +18,9 @@ public class InfoDisplay : MonoBehaviour {
     public bool upgrade = true;
     public int currentScreen = 0;
     public bool swordSelected = true;
+    public float fadeoutTime;
+
+    int tempRuneVal = 0;
 
     //In order: Determines current menu value, last menu value, amount of items in the set, and how many items will be displayed.
     public int currentPointer, lastPointer, menuSize, itemsDisplayed;
@@ -48,6 +52,7 @@ public class InfoDisplay : MonoBehaviour {
             {
                 itemListing[i].gameObject.SetActive(false);
             }
+            p.gameObject.SetActive(false);
         }
         else
         {
@@ -57,6 +62,7 @@ public class InfoDisplay : MonoBehaviour {
             {
                 itemListing[i].gameObject.SetActive(true);
             }
+            p.gameObject.SetActive(true);
         }
         if (UIstate == 1)
         {
@@ -69,6 +75,17 @@ public class InfoDisplay : MonoBehaviour {
         if (UIstate == 3)
         {
             combineItems();
+        }
+        if (feedbackMsg.IsActive())
+        {
+            if (fadeoutTime > 0)
+            {
+                fadeoutTime -= Time.deltaTime;
+            }
+            else
+            {
+                feedbackMsg.gameObject.SetActive(false);
+            }
         }
 	}
 
@@ -91,61 +108,24 @@ public class InfoDisplay : MonoBehaviour {
         //Print out on that UI the two options are 'Upgrade' or 'Experiment'.
         //If the option selected is 'Upgrade', show the upgradeReqs values and prompt next.
         //If it's 'Experiment', prompt to select a material that the player has discovered.
-        
-        displayTxt.text = "Upgrade\t\tExperiment";
         if (currentScreen == 0)
         {
-            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+            displayTxt.text = "Upgrade\t\tExperiment";
+            if ((Input.GetKeyDown(KeyCode.LeftArrow)) || (Input.GetKeyDown(KeyCode.RightArrow)))
             {
                 upgrade = !upgrade;
+                p.pPos++;
+                if (p.pPos > 1)
+                {
+                    p.pPos = 0;
+                }
             }
-            if (Input.GetKeyDown(KeyCode.Z))
+            if (Input.GetKeyUp(KeyCode.Space))
             {
                 if (upgrade)
                 {
-                    displayTxt.text = "To upgrade this, you need the following materials:\nWood: " + str.upgradeReqs[0] + "\tStone: " + str.upgradeReqs[1] + "\nMetal: " + str.upgradeReqs[2] + "\tWater: " + str.upgradeReqs[3] + "\nWould you like to proceed?\nYes\tNo";
-                    moveNext1 = false;
-                    upgrade = true;
-                    while (!moveNext1)
-                    {
-                        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
-                        {
-                            upgrade = !upgrade;
-                        }
-                        if (Input.GetKeyDown(KeyCode.Z))
-                        {
-                            if (upgrade)
-                            {
-                                if ((Controller.Instance.woodCount >= str.upgradeReqs[0]) && (Controller.Instance.stoneCount >= str.upgradeReqs[1]) && (Controller.Instance.metalCount >= str.upgradeReqs[2]) && (Controller.Instance.waterCount >= str.upgradeReqs[3]))
-                                {
-                                    Controller.Instance.woodCount -= str.upgradeReqs[0];
-                                    Controller.Instance.stoneCount -= str.upgradeReqs[1];
-                                    Controller.Instance.metalCount -= str.upgradeReqs[2];
-                                    Controller.Instance.waterCount -= str.upgradeReqs[3];
-                                    //Upgrade the structure.
-                                }
-                                else
-                                {
-									displayTxt.text = "That didn't work.";
-                                }
-                            }
-                            else
-                            {
-                                //Return to last menu.
-                                moveNext1 = !moveNext1;
-                            }
-                            if (Input.GetKeyDown(KeyCode.X))
-                            {
-                                //Return to last menu.
-                                moveNext1 = !moveNext1;
-                            }
-                        }
-                        if (Input.GetKeyDown(KeyCode.X))
-                        {
-                            //Return to last menu.
-                            moveNext1 = !moveNext1;
-                        }
-                    }
+                    currentScreen = 1;
+                    p.pPos = 0;
                 }
                 else
                 {
@@ -157,22 +137,31 @@ public class InfoDisplay : MonoBehaviour {
                     minMenuItem = 0;
                     maxMenuItem = 3;
                     menuSize = 8;
+                    p.pPos = 0;
                 }
             }
-            if (Input.GetKeyDown(KeyCode.X))
+            if (Input.GetKeyUp(KeyCode.X))
             {
-                //Return to last menu.
-                currentScreen = 0;
+                //End it all.
+                UIstate = 0;
+                UIActive = false;
+                currentStructure = null;
+                Controller.Instance.UIActive = false;
             }
         }
         if (currentScreen == 1)
         {
-            displayTxt.text = "To upgrade this, you need the following materials:\nWood: " + str.upgradeReqs[0] + "\tStone: " + str.upgradeReqs[1] + "\nMetal: " + str.upgradeReqs[2] + "\tWater: " + str.upgradeReqs[3] + "\nWould you like to proceed?\nYes\tNo";
-            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+            displayTxt.text = "To upgrade this, you need the\nfollowing materials:\nWood: " + str.upgradeReqs[0] + "\tStone: " + str.upgradeReqs[1] + "\nMetal: " + str.upgradeReqs[2] + "\tWater: " + str.upgradeReqs[3] + "\nWould you like to proceed?\nYes\t\tNo";
+            if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
             {
                 upgrade = !upgrade;
+                p.pPos++;
+                if (p.pPos > 1)
+                {
+                    p.pPos = 0;
+                }
             }
-            if (Input.GetKeyDown(KeyCode.Z))
+            if (Input.GetKeyUp(KeyCode.Z))
             {
                 if (upgrade)
                 {
@@ -184,30 +173,42 @@ public class InfoDisplay : MonoBehaviour {
                         Controller.Instance.waterCount -= str.upgradeReqs[3];
                         //Upgrade the structure.
                         //Print a success message
+                        feedbackMsg.gameObject.SetActive(true);
+                        feedbackMsg.text = "Success!";
                         UIstate = 0;
                         UIActive = false;
                         currentStructure = null;
+                        Controller.Instance.UIActive = false;
                     }
                     else
                     {
-                        //Spit out an error message.
+                        feedbackMsg.gameObject.SetActive(true);
+                        feedbackMsg.text = "You don't have enough resources for that.";
+                        fadeoutTime = 4f;
+                        UIstate = 0;
+                        UIActive = false;
+                        currentStructure = null;
+                        Controller.Instance.UIActive = false;
                     }
                 }
                 else
                 {
                     //Return to last menu.
                     currentScreen = 0;
+                    p.pPos = 0;
                 }
-                if (Input.GetKeyDown(KeyCode.X))
+                if (Input.GetKeyUp(KeyCode.X))
                 {
                     //Return to last menu.
                     currentScreen = 0;
+                    p.pPos = 0;
                 }
             }
-            if (Input.GetKeyDown(KeyCode.X))
+            if (Input.GetKeyUp(KeyCode.X))
             {
                 //Return to last menu.
                 currentScreen = 0;
+                p.pPos = 0;
             }
         }
         if (currentScreen == 2)
@@ -218,7 +219,7 @@ public class InfoDisplay : MonoBehaviour {
             }
             move1D();
 
-            if (Input.GetKeyDown(KeyCode.Z))
+            if (Input.GetKeyUp(KeyCode.Z))
             {
                 //Using UIselector, check this versus the structureID on the table that the struct has. If success, apply upgrade. If fail, well... Yeah.
                 for (int i = 0; i < currentStructure.viableUpgrades.Length; i++)
@@ -226,15 +227,29 @@ public class InfoDisplay : MonoBehaviour {
                     if (currentStructure.viableUpgrades[i] == UISelector)
                     {
                         currentStructure.upgradeID = UISelector;
+                        feedbackMsg.gameObject.SetActive(true);
+                        feedbackMsg.text = "Success!";
                         UIstate = 0;
                         UIActive = false;
                         currentStructure = null;
+                        Controller.Instance.UIActive = false;
                     }
                     else
                     {
-                        //Spit out an error message.
+                        feedbackMsg.gameObject.SetActive(true);
+                        feedbackMsg.text = "Experimentation failed!";
+                        UIstate = 0;
+                        UIActive = false;
+                        currentStructure = null;
+                        Controller.Instance.UIActive = false;
                     }
                 }
+            }
+            if (Input.GetKeyUp(KeyCode.X))
+            {
+                //Return to last menu.
+                currentScreen = 0;
+                p.pPos = 0;
             }
         }
     }
@@ -249,11 +264,11 @@ public class InfoDisplay : MonoBehaviour {
         swordSelected = true;
         if (currentScreen == 0)
         {
-            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+            if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
             {
                 swordSelected = !swordSelected;
             }
-            if (Input.GetKeyDown(KeyCode.Z))
+            if (Input.GetKeyUp(KeyCode.Space))
             {
                 if (swordSelected)
                 {
@@ -262,11 +277,11 @@ public class InfoDisplay : MonoBehaviour {
                     upgrade = true;
                     if (currentScreen == 0)
                     {
-                        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+                        if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
                         {
                             upgrade = !upgrade;
                         }
-                        if (Input.GetKeyDown(KeyCode.Z))
+                        if (Input.GetKeyUp(KeyCode.Z))
                         {
                             if (upgrade)
                             {
@@ -275,10 +290,21 @@ public class InfoDisplay : MonoBehaviour {
                                     Controller.Instance.metalCount -= Controller.Instance.swordDetails[2];
                                     //Upgrade the weapon.
                                     //Bump the cost up.
+                                    feedbackMsg.gameObject.SetActive(true);
+                                    feedbackMsg.text = "Success!";
+                                    UIstate = 0;
+                                    UIActive = false;
+                                    currentStructure = null;
+                                    Controller.Instance.UIActive = false;
                                 }
                                 else
                                 {
-									displayTxt.text = "Doesn't seem like anything changed...";
+                                    feedbackMsg.gameObject.SetActive(true);
+                                    feedbackMsg.text = "Not enough metal.";
+                                    UIstate = 0;
+                                    UIActive = false;
+                                    currentStructure = null;
+                                    Controller.Instance.UIActive = false;
                                 }
                             }
                             else
@@ -287,7 +313,7 @@ public class InfoDisplay : MonoBehaviour {
                                 currentScreen = 0;
                             }
                         }
-                        if (Input.GetKeyDown(KeyCode.X))
+                        if (Input.GetKeyUp(KeyCode.X))
                         {
                             //Return to last menu.
                             currentScreen = 0;
@@ -302,11 +328,11 @@ public class InfoDisplay : MonoBehaviour {
                     upgrade = true;
                     if (currentScreen == 0)
                     {
-                        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+                        if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
                         {
                             upgrade = !upgrade;
                         }
-                        if (Input.GetKeyDown(KeyCode.Z))
+                        if (Input.GetKeyUp(KeyCode.Z))
                         {
                             if (upgrade)
                             {
@@ -315,10 +341,21 @@ public class InfoDisplay : MonoBehaviour {
                                     Controller.Instance.woodCount -= Controller.Instance.bowDetails[2];
                                     //Upgrade the weapon.
                                     //Bump the cost up.
+                                    feedbackMsg.gameObject.SetActive(true);
+                                    feedbackMsg.text = "Success!";
+                                    UIstate = 0;
+                                    UIActive = false;
+                                    currentStructure = null;
+                                    Controller.Instance.UIActive = false;
                                 }
                                 else
                                 {
-									displayTxt.text = "The bow doesn't look any different.";
+                                    feedbackMsg.gameObject.SetActive(true);
+                                    feedbackMsg.text = "Not enough wood. Doesn't seem like anything changed.";
+                                    UIstate = 0;
+                                    UIActive = false;
+                                    currentStructure = null;
+                                    Controller.Instance.UIActive = false;
                                 }
                             }
                             else
@@ -327,7 +364,7 @@ public class InfoDisplay : MonoBehaviour {
                                 currentScreen = 0;
                             }
                         }
-                        if (Input.GetKeyDown(KeyCode.X))
+                        if (Input.GetKeyUp(KeyCode.X))
                         {
                             //Return to last menu.
                             currentScreen = 0;
@@ -335,7 +372,7 @@ public class InfoDisplay : MonoBehaviour {
                     }
                 }
             }
-            if (Input.GetKeyDown(KeyCode.X))
+            if (Input.GetKeyUp(KeyCode.X))
             {
                 //Return to last menu.
                 currentScreen = 0;
@@ -345,123 +382,159 @@ public class InfoDisplay : MonoBehaviour {
 
     public void combineItems()
     {
-        //In order: Select the rune you want to test, then the material you want to test it on, then the quantity.
+        //In order: Select the rune you want to test, then the material you want to test it on.
         //If the first two match with the table's values, add the third value to the corresponding index on the Controller.
-        UISelector = 0;
-        displayTxt.text = "Which rune would you like to use?\n";
-        int tempRuneVal = -1;
+        displayTxt.text = "Which rune would you like to use?";
         if (Controller.Instance.runesOwned[0])
         {
-            displayTxt.text += "Se Rune\n";
+            itemListing[0].text = "Se Rune";
         }
         else
         {
-            displayTxt.text += "???\n";
+            itemListing[0].text = "???";
         }
         if (Controller.Instance.runesOwned[1])
         {
-            displayTxt.text += "Au Rune\n";
+            itemListing[1].text = "Au Rune";
         }
         else
         {
-            displayTxt.text += "???\n";
+            itemListing[1].text = "???";
         }
         if (Controller.Instance.runesOwned[2])
         {
-            displayTxt.text += "Ni Rune\n";
+            itemListing[2].text = "Ni Rune";
         }
         else
         {
-            displayTxt.text += "???\n";
+            itemListing[2].text = "???";
         }
         if (Controller.Instance.runesOwned[3])
         {
-            displayTxt.text += "Ka Rune\n";
+            itemListing[3].text = "Ka Rune";
         }
         else
         {
-            displayTxt.text += "???";
+            itemListing[3].text = "???";
         }
         itemsDisplayed = 3;
         minMenuItem = 0;
         maxMenuItem = 3;
         menuSize = 3;
+        move1D();
         //Set the text to be rotated through as an array of strs.
         if (currentScreen == 0)
         {
-            move1D();
             if (Input.GetKeyDown(KeyCode.Z))
             {
                 if (UISelector == 0 && Controller.Instance.runesOwned[0])
                 {
                     currentScreen = 1;
                     tempRuneVal = UISelector;
+                    UISelector = 0;
                 }
                 else if (UISelector == 1 && Controller.Instance.runesOwned[1])
                 {
                     currentScreen = 1;
                     tempRuneVal = UISelector;
+                    UISelector = 0;
                 }
                 else if (UISelector == 2 && Controller.Instance.runesOwned[2])
                 {
                     currentScreen = 1;
                     tempRuneVal = UISelector;
+                    UISelector = 0;
                 }
                 else if (UISelector == 3 && Controller.Instance.runesOwned[3])
                 {
                     currentScreen = 1;
                     tempRuneVal = UISelector;
+                    UISelector = 0;
                 }
                 else
                 {
-					displayTxt.text = "You do not have this Rune in your inventory.";
+                    Debug.Log("You don't own that rune!");
                 }
             }
+            if (Input.GetKeyUp(KeyCode.X))
+            {
+                //End it all.
+                UIstate = 0;
+                UIActive = false;
+                currentStructure = null;
+                Controller.Instance.UIActive = false;
+            }
         }
-        minMenuItem = 0;
-        maxMenuItem = 3;
-        menuSize = 3;
         //Set the text to be rotated through as an array of strs.
         if (currentScreen == 1)
         {
-            move1D();
-
-            if (Input.GetKeyDown(KeyCode.Z))
+            displayTxt.text = "Which material would you like to use?";
+            itemListing[0].text = "Wood";
+            itemListing[1].text = "Stone";
+            itemListing[2].text = "Metal";
+            itemListing[3].text = "Water";
+            if (Input.GetKeyDown(KeyCode.Space))
             {
-                //Run through the list in the parser; if the rune value and UISelector line up, succeed. Else, fail.
-                for (int i = 0; i < TextFileParser.tfp.convertedItemList.Length; i++)
+                if ((UISelector == 0 && Controller.Instance.woodCount > 0) || (UISelector == 1 && Controller.Instance.stoneCount > 0) || (UISelector == 2 && Controller.Instance.metalCount > 0) || (UISelector == 3 && Controller.Instance.waterCount > 3))
                 {
-                    if (tempRuneVal == TextFileParser.tfp.convertedItemList[i,0] && UISelector == TextFileParser.tfp.convertedItemList[i, 1])
-                    {
-                        Controller.Instance.specialItemList[tempRuneVal, UISelector] += 1;
-                        break;
-                    }
-                    else
-                    {
-                        //Spit out an error message.
-                    }
-                }
-                if (UISelector == 0)
-                {
-                    Controller.Instance.woodCount--;
-                }
-                if (UISelector == 1)
-                {
-                    Controller.Instance.stoneCount--;
-                }
-                if (UISelector == 2)
-                {
-                    Controller.Instance.metalCount--;
-                }
-                if (UISelector == 3)
-                {
-                    Controller.Instance.waterCount--;
+                    currentScreen = 2;
                 }
             }
+            if (Input.GetKeyUp(KeyCode.X))
+            {
+                //Back 1.
+                currentScreen = 0;
+            }
         }
-        UIstate = 0;
-        currentStructure = null;
-        UIActive = false;
+        if (currentScreen == 2)
+        {
+            //Run through the list in the parser; if the rune value and UISelector line up, succeed. Else, fail.
+            for (int i = 0; i < 10; i++)
+            {
+                if (tempRuneVal == TextFileParser.tfp.convertedItemList[i, 0] && UISelector == TextFileParser.tfp.convertedItemList[i, 1])
+                {
+                    if (Controller.Instance.specialItemList[tempRuneVal, UISelector] == -1)
+                    {
+                        Controller.Instance.specialItemList[tempRuneVal, UISelector] = 0;
+                    }
+                    Controller.Instance.specialItemList[tempRuneVal, UISelector] += 1;
+                    fadeoutTime = 4f;
+                    feedbackMsg.text = "Success! You've made a new item!";
+                    break;
+                }
+                else
+                {
+                    //Spit out an error message.
+                    if (i == 9)
+                    {
+                        fadeoutTime = 4f;
+                        feedbackMsg.text = "Sorry! No dice!";
+                    }
+                }
+            }
+            if (UISelector == 0)
+            {
+                Controller.Instance.woodCount--;
+            }
+            if (UISelector == 1)
+            {
+                Controller.Instance.stoneCount--;
+            }
+            if (UISelector == 2)
+            {
+                Controller.Instance.metalCount--;
+            }
+            if (UISelector == 3)
+            {
+                Controller.Instance.waterCount--;
+            }
+
+            UIstate = 0;
+            currentStructure = null;
+            UIActive = false;
+            feedbackMsg.gameObject.SetActive(true);
+            Controller.Instance.UIActive = false;
+        }
     }
 
     public void generateItemList()
@@ -539,7 +612,7 @@ public class InfoDisplay : MonoBehaviour {
                 UISelector++;
             }
         }
-        p.pPos = UISelector - minMenuItem;
+         p.pPos = UISelector - minMenuItem;
         //And finally, we update the pointer's Y coordinate to line up with that of the given index.
     }
 }
