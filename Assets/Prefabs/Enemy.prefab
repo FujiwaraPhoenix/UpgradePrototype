@@ -100,9 +100,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hp: 10
-  dmg: 0
+  dmg: 1
   mvtSpd: 2
   rb: {fileID: 50940335577630766}
+  controller: {fileID: 0}
 --- !u!212 &212201984445894164
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -139,7 +140,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.8301887, g: 0.27556434, b: 0.090067655, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

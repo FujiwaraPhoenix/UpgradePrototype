@@ -31,6 +31,7 @@ public class Controller : MonoBehaviour {
 
     public GameObject[] tiles = new GameObject[2];
     public Item[] worldItems = new Item[7];
+    public Enemy e;
 
     void Awake()
     {
@@ -47,7 +48,7 @@ public class Controller : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        
+        initWorld();
 	}
 	
 	// Update is called once per frame
@@ -66,14 +67,53 @@ public class Controller : MonoBehaviour {
 
     void initWorld()
     {
-        for (int i = -10; i < 10; i++)
+        for (float i = -50; i < 50; i += 2.5f)
         {
-            for (int j = -10; j < 10; j++)
+            for (float j = -50; j < 50; j += 2.5f)
             {
                 //splatter the world with tiles.
+                if ((Random.Range(0, 100) > 90f) && Mathf.Abs(i) > 7.5f && Mathf.Abs(j) > 7.5f)
+                {
+                    GameObject tile = Instantiate(tiles[1], new Vector3(i, j, 0), Quaternion.identity);
+
+                }
+                else
+                {
+                    GameObject tile = Instantiate(tiles[0], new Vector3(i, j, 1), Quaternion.identity);
+                    //Then, splash the world with resources. Liberally.
+                    if (Mathf.Abs(i) > 7.5f || Mathf.Abs(j) > 7.5f)
+                    {
+                        if (Random.Range(0, 5) < 2)
+                        {
+                            int itemVal = Random.Range(0, 3);
+                            Item resource = Instantiate(worldItems[itemVal], new Vector3(i, j, 0), Quaternion.identity);
+                        }
+                    }
+                }
             }
         }
-        //Then, splash the world with resources. Liberally.
-        //FInally, seed the runes and drop a few enemies into the world.
+        //Finally, seed the runes and drop a few enemies into the world.
+        for (int i = 0; i < 4; i++)
+        {
+            Item addRune = Instantiate(worldItems[3 + i], new Vector3(Random.Range(-25f, 25f), Random.Range(-25f, 25f), 0), Quaternion.identity);
+        }
+        for (int i = 0; i < 20; i++)
+        {
+            float range = Random.Range(10f, 50f);
+            float range2 = Random.Range(10f, 50f);
+            int makeNeg = Random.Range(0, 2);
+            int makeNeg2 = Random.Range(0, 2);
+
+            if (makeNeg == 1)
+            {
+                range *= -1;
+            }
+            if (makeNeg == 1)
+            {
+                range2 *= -1;
+            }
+
+            Enemy spawnE = Instantiate(e, new Vector3(range, range2, 0), Quaternion.identity);
+        }
     }
 }
