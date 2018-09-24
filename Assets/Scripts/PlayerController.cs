@@ -29,7 +29,6 @@ public class PlayerController : MonoBehaviour {
         if (!Controller.Instance.UIActive)
         {
             moveChar();
-            getItem();
             trackFacing();
 
             if (Input.GetKeyDown(KeyCode.X) && attacking == false)
@@ -75,56 +74,64 @@ public class PlayerController : MonoBehaviour {
         transform.position += pDir.normalized * mvtSpd* Time.deltaTime;
     }
 
-    public void getItem()
-    {
-        if (Input.GetKeyDown(KeyCode.Z)) {
-            Collider2D[] checkForItem = Physics2D.OverlapBoxAll(transform.position, GetComponent<BoxCollider2D>().size, 0);
-            foreach (Collider2D itemCollider in checkForItem)
-            {
-                if (itemCollider.GetComponent<Item>() != null)
-                {
-                    Item item = itemCollider.GetComponent<Item>();
-                    int itemID = item.itemType;
-                    addItem(itemID);
-                    Destroy(item.gameObject);
-                }
-            }
-        }
-    }
-
     public void addItem(int itemID)
     {
         if (itemID == 0)
         {
             Controller.Instance.woodCount++;
+            InfoDisplay.id.feedbackMsg.gameObject.SetActive(true);
+            InfoDisplay.id.feedbackMsg.text = "Found some wood!";
+            InfoDisplay.id.fadeoutTime = 2f;
+
         }
         if (itemID == 1)
         {
             Controller.Instance.stoneCount++;
+            InfoDisplay.id.feedbackMsg.gameObject.SetActive(true);
+            InfoDisplay.id.feedbackMsg.text = "Found some stone!";
+            InfoDisplay.id.fadeoutTime = 2f;
         }
         if (itemID == 2)
         {
             Controller.Instance.metalCount++;
+            InfoDisplay.id.feedbackMsg.gameObject.SetActive(true);
+            InfoDisplay.id.feedbackMsg.text = "Found some metal!";
+            InfoDisplay.id.fadeoutTime = 2f;
         }
         if (itemID == 3)
         {
+            InfoDisplay.id.feedbackMsg.gameObject.SetActive(true);
+            InfoDisplay.id.feedbackMsg.text = "Got some water!";
+            InfoDisplay.id.fadeoutTime = 2f;
             Controller.Instance.waterCount++;
         }
         if (itemID == 4)
         {
             Controller.Instance.runesOwned[0] = true;
+            InfoDisplay.id.feedbackMsg.gameObject.SetActive(true);
+            InfoDisplay.id.feedbackMsg.text = "Found a rune!";
+            InfoDisplay.id.fadeoutTime = 2f;
         }
         if (itemID == 5)
         {
             Controller.Instance.runesOwned[1] = true;
+            InfoDisplay.id.feedbackMsg.gameObject.SetActive(true);
+            InfoDisplay.id.feedbackMsg.text = "Found a rune!";
+            InfoDisplay.id.fadeoutTime = 2f;
         }
         if (itemID == 6)
         {
             Controller.Instance.runesOwned[2] = true;
+            InfoDisplay.id.feedbackMsg.gameObject.SetActive(true);
+            InfoDisplay.id.feedbackMsg.text = "Found a rune!";
+            InfoDisplay.id.fadeoutTime = 2f;
         }
         if (itemID == 7)
         {
             Controller.Instance.runesOwned[3] = true;
+            InfoDisplay.id.feedbackMsg.gameObject.SetActive(true);
+            InfoDisplay.id.feedbackMsg.text = "Found a rune!";
+            InfoDisplay.id.fadeoutTime = 2f;
         }
     }
 

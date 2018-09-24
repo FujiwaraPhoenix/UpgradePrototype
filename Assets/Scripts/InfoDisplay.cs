@@ -76,6 +76,10 @@ public class InfoDisplay : MonoBehaviour {
         {
             combineItems();
         }
+        if (UIstate == 4)
+        {
+            chooseItem(currentStructure);
+        }
         if (feedbackMsg.IsActive())
         {
             if (fadeoutTime > 0)
@@ -120,9 +124,9 @@ public class InfoDisplay : MonoBehaviour {
                     p.pPos = 0;
                 }
             }
-            if (Input.GetKeyUp(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
-                if (upgrade)
+                if (upgrade && currentStructure.upgradeLv < currentStructure.maxUpgradeLv)
                 {
                     currentScreen = 1;
                     p.pPos = 0;
@@ -140,7 +144,7 @@ public class InfoDisplay : MonoBehaviour {
                     p.pPos = 0;
                 }
             }
-            if (Input.GetKeyUp(KeyCode.X))
+            if (Input.GetKeyDown(KeyCode.X))
             {
                 //End it all.
                 UIstate = 0;
@@ -152,7 +156,7 @@ public class InfoDisplay : MonoBehaviour {
         if (currentScreen == 1)
         {
             displayTxt.text = "To upgrade this, you need the\nfollowing materials:\nWood: " + str.upgradeReqs[0] + "\tStone: " + str.upgradeReqs[1] + "\nMetal: " + str.upgradeReqs[2] + "\tWater: " + str.upgradeReqs[3] + "\nWould you like to proceed?\nYes\t\tNo";
-            if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
+            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
             {
                 upgrade = !upgrade;
                 p.pPos++;
@@ -161,7 +165,7 @@ public class InfoDisplay : MonoBehaviour {
                     p.pPos = 0;
                 }
             }
-            if (Input.GetKeyUp(KeyCode.Z))
+            if (Input.GetKeyDown(KeyCode.Z))
             {
                 if (upgrade)
                 {
@@ -172,12 +176,18 @@ public class InfoDisplay : MonoBehaviour {
                         Controller.Instance.metalCount -= str.upgradeReqs[2];
                         Controller.Instance.waterCount -= str.upgradeReqs[3];
                         //Upgrade the structure.
+                        currentStructure.upgradeLv++;
+
                         //Print a success message
                         feedbackMsg.gameObject.SetActive(true);
                         feedbackMsg.text = "Success!";
                         UIstate = 0;
                         UIActive = false;
                         currentStructure = null;
+                        upgrade = false;
+                        p.pPos = 0;
+                        currentScreen = 0;
+                        UISelector = 0;
                         Controller.Instance.UIActive = false;
                     }
                     else
@@ -188,6 +198,9 @@ public class InfoDisplay : MonoBehaviour {
                         UIstate = 0;
                         UIActive = false;
                         currentStructure = null;
+                        p.pPos = 0;
+                        currentScreen = 0;
+                        UISelector = 0;
                         Controller.Instance.UIActive = false;
                     }
                 }
@@ -197,14 +210,14 @@ public class InfoDisplay : MonoBehaviour {
                     currentScreen = 0;
                     p.pPos = 0;
                 }
-                if (Input.GetKeyUp(KeyCode.X))
+                if (Input.GetKeyDown(KeyCode.X))
                 {
                     //Return to last menu.
                     currentScreen = 0;
                     p.pPos = 0;
                 }
             }
-            if (Input.GetKeyUp(KeyCode.X))
+            if (Input.GetKeyDown(KeyCode.X))
             {
                 //Return to last menu.
                 currentScreen = 0;
@@ -219,7 +232,7 @@ public class InfoDisplay : MonoBehaviour {
             }
             move1D();
 
-            if (Input.GetKeyUp(KeyCode.Z))
+            if (Input.GetKeyDown(KeyCode.Z))
             {
                 //Using UIselector, check this versus the structureID on the table that the struct has. If success, apply upgrade. If fail, well... Yeah.
                 for (int i = 0; i < currentStructure.viableUpgrades.Length; i++)
@@ -232,6 +245,13 @@ public class InfoDisplay : MonoBehaviour {
                         UIstate = 0;
                         UIActive = false;
                         currentStructure = null;
+                        p.pPos = 0;
+                        currentScreen = 0;
+                        UISelector = 0;
+                        for (int k = 0; k < 4; k++)
+                        {
+                            itemListing[k].text = "";
+                        }
                         Controller.Instance.UIActive = false;
                     }
                     else
@@ -241,15 +261,26 @@ public class InfoDisplay : MonoBehaviour {
                         UIstate = 0;
                         UIActive = false;
                         currentStructure = null;
+                        p.pPos = 0;
+                        currentScreen = 0;
+                        UISelector = 0;
+                        for (int k = 0; k < 4; k++)
+                        {
+                            itemListing[k].text = "";
+                        }
                         Controller.Instance.UIActive = false;
                     }
                 }
             }
-            if (Input.GetKeyUp(KeyCode.X))
+            if (Input.GetKeyDown(KeyCode.X))
             {
                 //Return to last menu.
                 currentScreen = 0;
                 p.pPos = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    itemListing[i].text = "";
+                }
             }
         }
     }
@@ -260,122 +291,172 @@ public class InfoDisplay : MonoBehaviour {
         //Print out on that UI to select either the Sword or Bow/Arrow.
         //If the furnace has the freezing upgrade, apply that effect to the weapon.
         //Else, treat it like default upgrade for structures.
-        displayTxt.text = "Sword\tBow and Arrow";
-        swordSelected = true;
+        displayTxt.text = "What would you like to upgrade?\nSword\t\tBow";
         if (currentScreen == 0)
         {
-            if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
+            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
             {
                 swordSelected = !swordSelected;
+                p.pPos++;
+                if (p.pPos > 1)
+                {
+                    p.pPos = 0;
+                }
             }
-            if (Input.GetKeyUp(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 if (swordSelected)
                 {
-                    displayTxt.text = "To upgrade this, you need " + Controller.Instance.swordDetails[2] + " metal. Proceed?";
-                    
-                    upgrade = true;
-                    if (currentScreen == 0)
+                    currentScreen = 1;
+                }
+                else
+                {
+                    currentScreen = 2;
+                }
+                p.pPos = 0;
+                upgrade = true;
+            }
+        }
+        if (currentScreen == 1)
+        {
+            displayTxt.text = "To upgrade this, you need " + Controller.Instance.swordDetails[2] + " metal.\nProceed?\nYes\t\tNo";
+            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                upgrade = !upgrade;
+                p.pPos++;
+                if (p.pPos > 1)
+                {
+                    p.pPos = 0;
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                if (upgrade)
+                {
+                    if (Controller.Instance.metalCount >= Controller.Instance.swordDetails[2])
                     {
-                        if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
+                        Controller.Instance.metalCount -= Controller.Instance.swordDetails[2];
+                        //Upgrade the weapon.
+                        Controller.Instance.swordDetails[0] += 2;
+                        //Bump the cost up.
+                        Controller.Instance.swordDetails[2] = Controller.Instance.swordDetails[2] + 5;
+                        feedbackMsg.gameObject.SetActive(true);
+                        feedbackMsg.text = "Success!";
+                        if (currentStructure.upgradeID == 5 || currentStructure.upgradeID == 6 || currentStructure.upgradeID == 8)
                         {
-                            upgrade = !upgrade;
+                            Controller.Instance.swordDetails[1] = currentStructure.upgradeID;
                         }
-                        if (Input.GetKeyUp(KeyCode.Z))
-                        {
-                            if (upgrade)
-                            {
-                                if (Controller.Instance.metalCount >= Controller.Instance.swordDetails[2])
-                                {
-                                    Controller.Instance.metalCount -= Controller.Instance.swordDetails[2];
-                                    //Upgrade the weapon.
-                                    //Bump the cost up.
-                                    feedbackMsg.gameObject.SetActive(true);
-                                    feedbackMsg.text = "Success!";
-                                    UIstate = 0;
-                                    UIActive = false;
-                                    currentStructure = null;
-                                    Controller.Instance.UIActive = false;
-                                }
-                                else
-                                {
-                                    feedbackMsg.gameObject.SetActive(true);
-                                    feedbackMsg.text = "Not enough metal.";
-                                    UIstate = 0;
-                                    UIActive = false;
-                                    currentStructure = null;
-                                    Controller.Instance.UIActive = false;
-                                }
-                            }
-                            else
-                            {
-                                //Return to last menu.
-                                currentScreen = 0;
-                            }
-                        }
-                        if (Input.GetKeyUp(KeyCode.X))
-                        {
-                            //Return to last menu.
-                            currentScreen = 0;
-                        }
+                        UIstate = 0;
+                        UIActive = false;
+                        currentStructure = null;
+                        p.pPos = 0;
+                        currentScreen = 0;
+                        UISelector = 0;
+                        Controller.Instance.UIActive = false;
+                    }
+                    else
+                    {
+                        feedbackMsg.gameObject.SetActive(true);
+                        feedbackMsg.text = "Not enough metal.";
+                        UIstate = 0;
+                        UIActive = false;
+                        currentStructure = null;
+                        p.pPos = 0;
+                        currentScreen = 0;
+                        UISelector = 0;
+                        Controller.Instance.UIActive = false;
                     }
                 }
                 else
                 {
-                    //Here, it's the bow. Thus, wood.
-                    displayTxt.text = "To upgrade this, you need " + Controller.Instance.bowDetails[2] + " wood. Proceed?";
-                    
-                    upgrade = true;
-                    if (currentScreen == 0)
-                    {
-                        if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
-                        {
-                            upgrade = !upgrade;
-                        }
-                        if (Input.GetKeyUp(KeyCode.Z))
-                        {
-                            if (upgrade)
-                            {
-                                if (Controller.Instance.woodCount >= Controller.Instance.bowDetails[2])
-                                {
-                                    Controller.Instance.woodCount -= Controller.Instance.bowDetails[2];
-                                    //Upgrade the weapon.
-                                    //Bump the cost up.
-                                    feedbackMsg.gameObject.SetActive(true);
-                                    feedbackMsg.text = "Success!";
-                                    UIstate = 0;
-                                    UIActive = false;
-                                    currentStructure = null;
-                                    Controller.Instance.UIActive = false;
-                                }
-                                else
-                                {
-                                    feedbackMsg.gameObject.SetActive(true);
-                                    feedbackMsg.text = "Not enough wood. Doesn't seem like anything changed.";
-                                    UIstate = 0;
-                                    UIActive = false;
-                                    currentStructure = null;
-                                    Controller.Instance.UIActive = false;
-                                }
-                            }
-                            else
-                            {
-                                //Return to last menu.
-                                currentScreen = 0;
-                            }
-                        }
-                        if (Input.GetKeyUp(KeyCode.X))
-                        {
-                            //Return to last menu.
-                            currentScreen = 0;
-                        }
-                    }
+                    //Return to last menu.
+                    currentScreen = 0;
+                    p.pPos = 0;
                 }
             }
-            if (Input.GetKeyUp(KeyCode.X))
+            if (Input.GetKeyDown(KeyCode.X))
             {
                 //Return to last menu.
                 currentScreen = 0;
+                p.pPos = 0;
+            }
+        }
+        
+        if (currentScreen == 2)
+        {
+            //Here, it's the bow. Thus, wood.
+            displayTxt.text = "To upgrade this, you need " + Controller.Instance.bowDetails[2] + " wood.\nProceed?\nYes\t\tNo";
+
+            upgrade = true;
+            if (currentScreen == 0)
+            {
+                if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+                {
+                    upgrade = !upgrade;
+                    p.pPos++;
+                    if (p.pPos > 1)
+                    {
+                        p.pPos = 0;
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.Z))
+                {
+                    if (upgrade)
+                    {
+                        if (Controller.Instance.woodCount >= Controller.Instance.bowDetails[2])
+                        {
+                            Controller.Instance.woodCount -= Controller.Instance.bowDetails[2];
+                            //Upgrade the weapon.
+                            Controller.Instance.bowDetails[0] += 2;
+                            //Bump the cost up.
+                            Controller.Instance.bowDetails[2] += 5;
+                            if (currentStructure.upgradeID == 5 || currentStructure.upgradeID == 6 || currentStructure.upgradeID == 8)
+                            {
+                                Controller.Instance.swordDetails[1] = currentStructure.upgradeID;
+                            }
+                            feedbackMsg.gameObject.SetActive(true);
+                            feedbackMsg.text = "Success!";
+                            UIstate = 0;
+                            UIActive = false;
+                            currentStructure = null;
+                            p.pPos = 0;
+                            currentScreen = 0;
+                            UISelector = 0;
+                            Controller.Instance.UIActive = false;
+                        }
+                        else
+                        {
+                            feedbackMsg.gameObject.SetActive(true);
+                            feedbackMsg.text = "Not enough wood. Doesn't seem like anything changed.";
+                            UIstate = 0;
+                            UIActive = false;
+                            currentStructure = null;
+                            p.pPos = 0;
+                            currentScreen = 0;
+                            UISelector = 0;
+                            Controller.Instance.UIActive = false;
+                        }
+                    }
+                    else
+                    {
+                        //Return to last menu.
+                        currentScreen = 0;
+                        p.pPos = 0;
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.X))
+                {
+                    //Return to last menu.
+                    currentScreen = 0;
+                    p.pPos = 0;
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                //Return to last menu.
+                currentScreen = 0;
+                p.pPos = 0;
             }
         }
     }
@@ -456,7 +537,7 @@ public class InfoDisplay : MonoBehaviour {
                     Debug.Log("You don't own that rune!");
                 }
             }
-            if (Input.GetKeyUp(KeyCode.X))
+            if (Input.GetKeyDown(KeyCode.X))
             {
                 //End it all.
                 UIstate = 0;
@@ -480,7 +561,7 @@ public class InfoDisplay : MonoBehaviour {
                     currentScreen = 2;
                 }
             }
-            if (Input.GetKeyUp(KeyCode.X))
+            if (Input.GetKeyDown(KeyCode.X))
             {
                 //Back 1.
                 currentScreen = 0;
@@ -534,6 +615,50 @@ public class InfoDisplay : MonoBehaviour {
             UIActive = false;
             feedbackMsg.gameObject.SetActive(true);
             Controller.Instance.UIActive = false;
+        }
+    }
+
+    public void chooseItem(Structure cStr)
+    {
+        if (currentScreen == 0)
+        {
+            displayTxt.text = "What would you like to do?\nUpgrade\t\tUse";
+            if ((Input.GetKeyDown(KeyCode.LeftArrow)) || (Input.GetKeyDown(KeyCode.RightArrow)))
+            {
+                //Lazy; using upgrade in place of Upgrade/use
+                upgrade = !upgrade;
+                p.pPos++;
+                if (p.pPos > 1)
+                {
+                    p.pPos = 0;
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                if (upgrade)
+                {
+                    cStr.promptUpgrade();
+                }
+                else
+                {
+                    cStr.useStructure();
+                    if (cStr.structureID == 2)
+                    {
+                        UIstate = 0;
+                        currentScreen = 0;
+                        UIActive = false;
+                        currentStructure = null;
+                        Controller.Instance.UIActive = false;
+                    }
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                UIstate = 0;
+                UIActive = false;
+                currentStructure = null;
+                Controller.Instance.UIActive = false;
+            }
         }
     }
 

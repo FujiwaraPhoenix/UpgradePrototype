@@ -29,6 +29,9 @@ public class Controller : MonoBehaviour {
     //Rune list
     public bool[] runesOwned = new bool[4];
 
+    public GameObject[] tiles = new GameObject[2];
+    public Item[] worldItems = new Item[7];
+
     void Awake()
     {
         if (Instance == null)
@@ -53,5 +56,24 @@ public class Controller : MonoBehaviour {
         {
             invulnTimer -= Time.deltaTime;
         }
+        if (PlayerController.pc.HP <= 0)
+        {
+            Destroy(PlayerController.pc.gameObject);
+            Debug.Log("YOU DIED");
+        }
+        //spawn a new enemy in the world every so often.
 	}
+
+    void initWorld()
+    {
+        for (int i = -10; i < 10; i++)
+        {
+            for (int j = -10; j < 10; j++)
+            {
+                //splatter the world with tiles.
+            }
+        }
+        //Then, splash the world with resources. Liberally.
+        //FInally, seed the runes and drop a few enemies into the world.
+    }
 }
